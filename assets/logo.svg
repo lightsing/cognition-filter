@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="cf-bg" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0b4f6c"/>
+      <stop offset="100%" stop-color="#0f3a47"/>
+    </linearGradient>
+    <linearGradient id="cf-stroke" x1="4" y1="4" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6be3f9"/>
+      <stop offset="100%" stop-color="#63e2ad"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#cf-bg)" stroke="url(#cf-stroke)" stroke-width="3.5"/>
+  <path d="M15 19H49V23.5L36.5 36V46.5L27.5 50.5V36L15 23.5V19Z" fill="#ffffff"/>
+</svg>
