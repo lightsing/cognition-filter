@@ -11,7 +11,7 @@ use std::{
 use tokio::sync::oneshot;
 use windows_sys::{
     Win32::{
-        Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
+        Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, POINT, RECT, WPARAM},
         System::{
             Com::{
                 COINIT_APARTMENTTHREADED, COINIT_DISABLE_OLE1DDE, CoInitializeEx, CoUninitialize,
@@ -19,11 +19,12 @@ use windows_sys::{
             LibraryLoader::GetModuleHandleW,
         },
         UI::{
+            HiDpi::{DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, SetThreadDpiAwarenessContext},
             Shell::{
                 NIF_ICON, NIF_INFO, NIF_MESSAGE, NIF_SHOWTIP, NIF_TIP, NIIF_INFO, NIM_ADD,
                 NIM_DELETE, NIM_MODIFY, NIM_SETFOCUS, NIM_SETVERSION, NIN_BALLOONUSERCLICK,
-                NIN_SELECT, NINF_KEY, NOTIFYICON_VERSION_4, NOTIFYICONDATAW, Shell_NotifyIconW,
-                ShellExecuteW,
+                NIN_SELECT, NINF_KEY, NOTIFYICON_VERSION_4, NOTIFYICONDATAW, NOTIFYICONIDENTIFIER,
+                Shell_NotifyIconGetRect, Shell_NotifyIconW, ShellExecuteW,
             },
             WindowsAndMessaging::*,
         },
@@ -195,6 +196,8 @@ impl Window {
     fn new(port: u16) -> Result<Box<Self>> {
         // All handles, the COM apartment, and the WndProc state are owned by this OS thread.
         unsafe {
+            // Keep Explorer's icon bounds and popup coordinates in physical screen pixels.
+            SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
             let instance = GetModuleHandleW(null());
             let mut owner = Box::new(Self {
                 port,
@@ -361,8 +364,32 @@ impl Drop for Window {
     }
 }
 
-fn popup(owner: &Window, x: i32, y: i32) {
+fn popup(owner: &Window) {
     unsafe {
+        let ident = NOTIFYICONIDENTIFIER {
+            cbSize: size_of::<NOTIFYICONIDENTIFIER>() as u32,
+            hWnd: owner.hwnd,
+            uID: 1,
+            ..Default::default()
+        };
+        let mut placement = TPMPARAMS {
+            cbSize: size_of::<TPMPARAMS>() as u32,
+            rcExclude: RECT::default(),
+        };
+        let mut anchor = POINT::default();
+        let rect = &mut placement.rcExclude;
+        let bounds = if Shell_NotifyIconGetRect(&ident, rect) == 0
+            && rect.left < rect.right
+            && rect.top < rect.bottom
+        {
+            anchor.x = rect.left.midpoint(rect.right);
+            anchor.y = rect.top;
+            &placement as *const TPMPARAMS
+        } else if GetCursorPos(&mut anchor) != 0 {
+            null()
+        } else {
+            return;
+        };
         let menu = CreatePopupMenu();
         if menu.is_null() {
             return;
@@ -373,14 +400,18 @@ fn popup(owner: &Window, x: i32, y: i32) {
         AppendMenuW(menu, MF_SEPARATOR, 0, null());
         AppendMenuW(menu, MF_STRING, EXIT as usize, w!("退出"));
         SetForegroundWindow(owner.hwnd);
-        let command = TrackPopupMenu(
+        let command = TrackPopupMenuEx(
             menu,
-            TPM_RETURNCMD | TPM_NONOTIFY | TPM_RIGHTBUTTON,
-            x,
-            y,
-            0,
+            TPM_RETURNCMD
+                | TPM_NONOTIFY
+                | TPM_RIGHTBUTTON
+                | TPM_CENTERALIGN
+                | TPM_BOTTOMALIGN
+                | TPM_VERTICAL,
+            anchor.x,
+            anchor.y,
             owner.hwnd,
-            null(),
+            bounds,
         );
         DestroyMenu(menu);
         PostMessageW(owner.hwnd, WM_NULL, 0, 0);
@@ -412,11 +443,7 @@ unsafe extern "system" fn window_proc(
                 CALLBACK => {
                     let event = (lparam as u32) & 0xffff;
                     match event {
-                        WM_CONTEXTMENU => popup(
-                            owner,
-                            i32::from(wparam as i16),
-                            i32::from((wparam >> 16) as i16),
-                        ),
+                        WM_CONTEXTMENU => popup(owner),
                         NIN_BALLOONUSERCLICK => owner.open_page(""),
                         WM_LBUTTONDBLCLK | KEY_SELECT => owner.open_page("settings"),
                         _ => {}
@@ -457,10 +484,6 @@ mod tests {
     use super::*;
     use std::time::Duration;
     use tokio::time::timeout;
-    use windows_sys::Win32::{
-        Foundation::RECT,
-        UI::Shell::{NOTIFYICONIDENTIFIER, Shell_NotifyIconGetRect},
-    };
 
     #[tokio::test]
     async fn tray_restarts_and_closes_without_a_visible_window() -> Result<()> {
