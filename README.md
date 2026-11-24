@@ -1,5 +1,7 @@
 # 认知滤网（Cognition Filter）
 
+> **项目主页与交互演示**：[lightsing.github.io/cognition-filter](https://lightsing.github.io/cognition-filter/) · **最新版本下载**：[GitHub Releases (v0.10.1)](https://github.com/lightsing/cognition-filter/releases/latest)
+
 **认知滤网（Cognition Filter）** 是一款本地优先的多模态网页内容过滤工具，通过「**本地 Rust Agent + 站点 DLL 插件 + 油猴（Tampermonkey）脚本**」的协作架构，结合视觉大模型对信息流推荐卡片进行自然语言语义筛选，帮你屏蔽不想看到的内容。
 
 与传统的关键词黑名单不同，认知滤网能同时理解卡片的**标题/正文、作者昵称与封面/配图**，并采用**先遮盖、后判定**的机制，在卡片进入视口前完成视觉遮罩，避免不愿看到的内容闪现。
