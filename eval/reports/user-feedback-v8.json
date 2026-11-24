@@ -1,0 +1,97 @@
+{
+  "suite": "user-feedback.json",
+  "cards": 8,
+  "withCover": 8,
+  "batches": 2,
+  "textCharacters": {
+    "baseline": 2159,
+    "compact": 1643
+  },
+  "mode": "live",
+  "measuredAt": "2026-11-22T14:12:29.141Z",
+  "promptVersion": "bili-card-8",
+  "requestedModel": "deepseek-flash",
+  "results": {
+    "baseline": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 8,
+      "calls": 2,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.75,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 0,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0.2,
+      "correctlyBlockedRate": 0.8,
+      "undecided": 0,
+      "inputTokens": 2901,
+      "outputTokens": 22,
+      "totalTokens": 2923,
+      "cachedInputTokens": 2560,
+      "tokensPerCard": 365.4,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "feedback-school-comments",
+          "expected": [
+            2,
+            3
+          ],
+          "predicted": 2
+        },
+        {
+          "id": "feedback-tip",
+          "expected": 2,
+          "predicted": 0
+        }
+      ]
+    },
+    "compact": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 8,
+      "calls": 2,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.625,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 0,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0.4,
+      "correctlyBlockedRate": 0.6,
+      "undecided": 0,
+      "inputTokens": 2619,
+      "outputTokens": 26,
+      "totalTokens": 2645,
+      "cachedInputTokens": 256,
+      "tokensPerCard": 330.6,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "feedback-fishing-story",
+          "expected": 3,
+          "predicted": 0
+        },
+        {
+          "id": "feedback-school-comments",
+          "expected": [
+            2,
+            3
+          ],
+          "predicted": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "id": "feedback-car-story",
+          "expected": 3,
+          "predicted": 0
+        }
+      ]
+    }
+  }
+}

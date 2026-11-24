@@ -1,0 +1,88 @@
+{
+  "suite": "cases.json",
+  "cards": 23,
+  "withCover": 4,
+  "batches": 4,
+  "textCharacters": {
+    "baseline": 4024,
+    "compact": 2976
+  },
+  "mode": "live",
+  "measuredAt": "2026-11-22T14:09:06.106Z",
+  "promptVersion": "bili-card-7",
+  "requestedModel": "deepseek-flash",
+  "results": {
+    "baseline": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 23,
+      "calls": 4,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.913,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 0,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 1,
+      "undecided": 3,
+      "inputTokens": 3369,
+      "outputTokens": 58,
+      "totalTokens": 3427,
+      "cachedInputTokens": 1408,
+      "tokensPerCard": 149,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "multi",
+          "expected": [
+            1,
+            2
+          ],
+          "predicted": 1
+        },
+        {
+          "id": "custom-politics",
+          "expected": 0,
+          "predicted": -1
+        }
+      ]
+    },
+    "compact": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 23,
+      "calls": 4,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.913,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 0,
+      "falseBlockRate": 0.1,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 1,
+      "undecided": 2,
+      "inputTokens": 2809,
+      "outputTokens": 58,
+      "totalTokens": 2867,
+      "cachedInputTokens": 768,
+      "tokensPerCard": 124.7,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "satire",
+          "expected": 0,
+          "predicted": 1
+        },
+        {
+          "id": "multi",
+          "expected": [
+            1,
+            2
+          ],
+          "predicted": 2
+        }
+      ]
+    }
+  }
+}

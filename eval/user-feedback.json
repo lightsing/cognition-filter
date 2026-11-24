@@ -1,0 +1,63 @@
+[
+  {
+    "rules": "default",
+    "cards": [
+      {
+        "id": "feedback-fishing-story",
+        "source": "用户提交的首页封面裁片",
+        "title": "最让钓鱼佬破防的事情是什么？",
+        "cover": "covers/feedback-fishing-story.png",
+        "expected": 3
+      },
+      {
+        "id": "feedback-school-comments",
+        "source": "用户提交的首页封面裁片",
+        "title": "中考五五分流为什么分不下去了？",
+        "cover": "covers/feedback-school-comments.png",
+        "expected": [2, 3]
+      },
+      {
+        "id": "feedback-tip",
+        "source": "用户提交的首页封面裁片",
+        "title": "生活经验 | 五十块钱消费可以解决绝大部分麻烦，把钱给基层劳动者，什么事情都好谈。",
+        "cover": "covers/feedback-tip.png",
+        "expected": 2
+      },
+      {
+        "id": "feedback-car-story",
+        "source": "用户提交的首页封面裁片",
+        "title": "如何评价“国产车抄了丰田三十年都没抄明白”的言论？",
+        "cover": "covers/feedback-car-story.png",
+        "expected": 3
+      },
+      {
+        "id": "feedback-comment",
+        "source": "用户提交的首页封面裁片",
+        "title": "老头有一种被伊丽莎白女王加冕的感觉",
+        "cover": "covers/feedback-comment.png",
+        "expected": 3
+      },
+      {
+        "id": "control-fishing-vlog",
+        "source": "合成对照，ImageGen 生成的海钓实拍风格画面",
+        "title": "最让我破防的一次海钓：实拍两小时没上鱼，到底是哪一步出了错？",
+        "cover": "covers/control-fishing-vlog.jpg",
+        "expected": 0
+      },
+      {
+        "id": "control-school-form",
+        "source": "合成对照，虚构的校内志愿填报演示界面",
+        "title": "中考后怎么填志愿？班主任演示校内模拟系统的录入与核对",
+        "cover": "covers/control-school-form.png",
+        "expected": 0
+      },
+      {
+        "id": "control-tip-receipt",
+        "source": "合成对照，旅行礼仪讲解封面与虚构的餐厅账单",
+        "title": "旅行时想感谢餐厅服务员，怎样给小费才礼貌？先看账单有没有服务费",
+        "cover": "covers/control-tip-receipt.png",
+        "expected": 0
+      }
+    ]
+  }
+]

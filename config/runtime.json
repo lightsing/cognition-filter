@@ -1,0 +1,9 @@
+{
+  "model": "deepseek-flash",
+  "endpoint": "https://api.deepseek.com",
+  "apiKey": "",
+  "providerLimits": { "deepseek-flash": 2500 },
+  "modelConcurrency": 64,
+  "siteScheduling": {},
+  "batchSize": 1
+}

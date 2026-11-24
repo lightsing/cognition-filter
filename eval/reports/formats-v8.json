@@ -1,0 +1,88 @@
+{
+  "suite": "formats.json",
+  "cards": 6,
+  "withCover": 4,
+  "batches": 1,
+  "textCharacters": {
+    "baseline": 1111,
+    "compact": 853
+  },
+  "mode": "live",
+  "measuredAt": "2026-11-22T14:12:35.839Z",
+  "promptVersion": "bili-card-8",
+  "requestedModel": "deepseek-flash",
+  "results": {
+    "baseline": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 6,
+      "calls": 1,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.6667,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 0,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0.25,
+      "correctlyBlockedRate": 0.75,
+      "undecided": 0,
+      "inputTokens": 1489,
+      "outputTokens": 15,
+      "totalTokens": 1504,
+      "cachedInputTokens": 1280,
+      "tokensPerCard": 250.7,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "format-personal",
+          "expected": 3,
+          "predicted": 0
+        },
+        {
+          "id": "format-layering",
+          "expected": [
+            2,
+            3
+          ],
+          "predicted": 2
+        }
+      ]
+    },
+    "compact": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 6,
+      "calls": 1,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.6667,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 0,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0.25,
+      "correctlyBlockedRate": 0.75,
+      "undecided": 0,
+      "inputTokens": 1348,
+      "outputTokens": 17,
+      "totalTokens": 1365,
+      "cachedInputTokens": 256,
+      "tokensPerCard": 227.5,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "format-personal",
+          "expected": 3,
+          "predicted": 0
+        },
+        {
+          "id": "format-layering",
+          "expected": [
+            2,
+            3
+          ],
+          "predicted": 2
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "rules": "default",
+    "cards": [
+      {"id":"hold-projections","title":"差一席会怎样？看完这张图你就懂了","cover":"covers/council.png","expected":1},
+      {"id":"hold-factions","title":"该站队了！葱油拌面用粗面还是细面？两种都做给你尝","cover":"covers/cooking.png","expected":0},
+      {"id":"hold-qa","title":"那年夏天的故事｜原回答截图朗读，第1页到第12页","cover":"covers/qa.png","expected":3},
+      {"id":"hold-dogpile","title":"放学后见","cover":"covers/teams.png","expected":2},
+      {"id":"hold-fairplay","title":"放学后见","cover":"covers/fairplay.png","expected":0},
+      {"id":"hold-reading","title":"第二集｜接着念原帖，后面还有三页","cover":"covers/answers.png","expected":3}
+    ]
+  }
+]

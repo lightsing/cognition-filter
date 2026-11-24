@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="cf-token" content="__PAIRING_TOKEN__">
+  <meta name="cf-title-key" content="stats.pageTitle">
+  <title>过滤统计 · Cognition Filter</title>
+  <link rel="stylesheet" href="/settings.css">
+  <script defer src="/i18n.js"></script>
+  <script defer src="/stats.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content" data-i18n="skip.toContent">跳到主要内容</a>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="topbar">
+        <div class="brand">
+          <span class="mark" aria-hidden="true"></span>
+          <div class="brand-text">
+            <span class="brand-name" data-i18n="app.name">Cognition Filter</span>
+            <span class="app-subtitle" data-i18n="app.subtitle">本地语义过滤代理</span>
+          </div>
+        </div>
+        <label class="lang-control">
+          <span data-i18n="lang.label">语言</span>
+          <select id="lang-select">
+            <option value="zh-CN">简体中文</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+      </div>
+      <nav class="agent-nav" data-i18n-attr="aria-label:nav.ariaLabel" aria-label="本地 agent 导航">
+        <a href="/settings" data-i18n="nav.settings">设置</a>
+        <a href="/settings#plugins" data-i18n="nav.plugins">站点插件</a>
+        <a href="/rules" data-i18n="nav.rules">过滤规则</a>
+        <a href="/stats" aria-current="page" data-i18n="nav.stats">过滤统计</a>
+        <a href="/" data-i18n="nav.pairing">浏览器配对</a>
+      </nav>
+      <div class="page-head">
+        <div class="page-head-text">
+          <h1 data-i18n="stats.heading">过滤统计</h1>
+          <p class="page-lead" data-i18n="stats.lead">查看卡片判定结果、规则命中对比与模型用量。</p>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <div class="stats-bar">
+        <label class="scope-control">
+          <span data-i18n="stats.periodLabel">统计范围</span>
+          <select id="period">
+            <option value="total" data-i18n="stats.period.total">累计</option>
+            <option value="session" data-i18n="stats.period.session">本次运行</option>
+          </select>
+        </label>
+        <span id="freshness" role="status" aria-live="polite" data-i18n="stats.freshness.loading">正在读取…</span>
+      </div>
+
+      <p id="stats-empty" class="empty-note" hidden data-i18n="stats.unavailable">当前统计范围暂不可用，请切换统计范围或稍后重试。</p>
+
+      <div class="stats-panel" id="numbers" hidden>
+        <section class="panel" aria-labelledby="sites-heading">
+          <div class="panel-head"><h2 id="sites-heading" data-i18n="stats.sites.title">各网站用量</h2></div>
+          <div class="site-stats-scroll" tabindex="0" role="region" aria-labelledby="sites-heading">
+            <table class="site-stats" aria-labelledby="sites-heading">
+              <thead><tr>
+                <th scope="col" data-i18n="stats.sites.site">网站</th>
+                <th scope="col" data-i18n="stats.outcomes.cards">收到送审</th>
+                <th scope="col" data-i18n="stats.usage.warmupCalls">规则预热次数</th>
+                <th scope="col" data-i18n="stats.sites.localRate">本地缓存命中率</th>
+                <th scope="col" data-i18n="stats.usage.prefixRate">前缀命中率</th>
+                <th scope="col" data-i18n="stats.usage.inputTokens">输入 token</th>
+                <th scope="col" data-i18n="stats.usage.outputTokens">输出 token</th>
+              </tr></thead>
+              <tbody id="site-usage"></tbody>
+              <tfoot id="global-usage"></tfoot>
+            </table>
+          </div>
+          <small class="section-note" data-i18n="stats.sites.note">本地缓存命中率按送审卡片数计算，模型前缀命中率按输入 token 计算。</small>
+        </section>
+        <section class="panel" aria-labelledby="outcomes-heading">
+          <div class="panel-head">
+            <h2 id="outcomes-heading" data-i18n="stats.outcomes.title">卡片判定</h2>
+          </div>
+          <dl class="metrics outcome-metrics">
+            <div class="metric-card"><dt data-i18n="stats.outcomes.cards">收到送审</dt><dd data-field="cards"></dd></div>
+            <div class="metric-card"><dt data-i18n="stats.outcomes.block">已屏蔽</dt><dd data-field="block"></dd></div>
+            <div class="metric-card"><dt data-i18n="stats.outcomes.allow">已放行</dt><dd data-field="allow"></dd></div>
+            <div class="metric-card"><dt data-i18n="stats.outcomes.pending">返回待定</dt><dd data-field="pending"></dd></div>
+            <div class="metric-card"><dt data-i18n="stats.outcomes.blockRate">屏蔽率</dt><dd id="block-rate"></dd></div>
+            <div class="metric-card"><dt data-i18n="stats.outcomes.cacheHits">本地判定缓存命中</dt><dd data-field="cacheHits"></dd></div>
+          </dl>
+
+          <div class="chart-block">
+            <div class="chart-caption">
+              <span data-i18n="stats.outcomes.breakdownLabel">卡片判定占比</span>
+            </div>
+            <svg id="outcomes-chart" class="stacked-bar-svg" viewBox="0 0 1000 14" preserveAspectRatio="none" aria-hidden="true">
+              <rect class="seg-track" x="0" y="0" width="1000" height="14"></rect>
+              <rect id="bar-block" class="seg-block" x="0" y="0" width="0" height="14"></rect>
+              <rect id="bar-allow" class="seg-allow" x="0" y="0" width="0" height="14"></rect>
+              <rect id="bar-pending" class="seg-pending" x="0" y="0" width="0" height="14"></rect>
+            </svg>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-dot dot-block" aria-hidden="true"></span><span id="legend-block"></span></span>
+              <span class="legend-item"><span class="legend-dot dot-allow" aria-hidden="true"></span><span id="legend-allow"></span></span>
+              <span class="legend-item"><span class="legend-dot dot-pending" aria-hidden="true"></span><span id="legend-pending"></span></span>
+            </div>
+          </div>
+
+          <small class="section-note" data-i18n="stats.outcomes.note">每次送审计一次。屏蔽率按已屏蔽和已放行的判定计算。</small>
+        </section>
+
+        <div class="stats-split">
+          <section class="panel" aria-labelledby="rules-heading">
+            <div class="panel-head">
+              <h2 id="rules-heading" data-i18n="stats.rules.title">规则命中对比</h2>
+            </div>
+            <dl id="rule-hits"></dl>
+            <small class="section-note" data-i18n="stats.rules.note">一张卡命中多条规则时，每条各计一次。</small>
+          </section>
+
+          <section class="panel" aria-labelledby="feedback-heading">
+            <div class="panel-head">
+              <h2 id="feedback-heading" data-i18n="stats.feedback.title">已应用的反馈</h2>
+            </div>
+            <dl class="metrics">
+              <div class="metric-card"><dt data-i18n="stats.feedback.reported">误杀反馈</dt><dd data-field="reported"></dd></div>
+              <div class="metric-card"><dt data-i18n="stats.feedback.picked">手动选卡屏蔽</dt><dd data-field="picked"></dd></div>
+            </dl>
+          </section>
+        </div>
+
+        <section class="panel" aria-labelledby="usage-heading">
+          <div class="panel-head">
+            <h2 id="usage-heading" data-i18n="stats.usage.title">模型用量</h2>
+          </div>
+
+          <div class="usage-groups">
+            <div>
+              <h3 class="usage-group-title" data-i18n="stats.usage.callsGroup">调用次数</h3>
+              <dl class="metrics">
+                <div class="metric-card"><dt data-i18n="stats.usage.modelCalls">逐卡送审次数</dt><dd data-field="modelCalls"></dd></div>
+                <div class="metric-card"><dt data-i18n="stats.usage.warmupCalls">规则预热次数</dt><dd data-field="warmupCalls"></dd></div>
+                <div class="metric-card"><dt data-i18n="stats.usage.warmupFailures">预热失败次数</dt><dd data-field="warmupFailures"></dd></div>
+                <div class="metric-card"><dt data-i18n="stats.usage.reflectionCalls">反馈分析次数</dt><dd data-field="reflectionCalls"></dd></div>
+              </dl>
+            </div>
+
+            <div>
+              <h3 class="usage-group-title" data-i18n="stats.usage.tokensGroup">Token 消耗与前缀缓存</h3>
+              <dl class="metrics">
+                <div class="metric-card"><dt data-i18n="stats.usage.inputTokens">输入 token</dt><dd data-field="inputTokens"></dd></div>
+                <div class="metric-card"><dt data-i18n="stats.usage.outputTokens">输出 token</dt><dd data-field="outputTokens"></dd></div>
+                <div class="metric-card"><dt data-i18n="stats.usage.prefixHitTokens">前缀命中 token</dt><dd data-field="prefixHitTokens"></dd></div>
+                <div class="metric-card"><dt data-i18n="stats.usage.prefixRate">前缀命中率</dt><dd id="prefix-rate"></dd></div>
+                <div class="metric-card"><dt data-i18n="stats.usage.warmupInputTokens">其中预热输入 token</dt><dd data-field="warmupInputTokens"></dd></div>
+              </dl>
+
+              <div class="chart-block">
+                <div class="chart-caption">
+                  <span data-i18n="stats.usage.prefixBarLabel">前缀缓存命中占输入 token 比例</span>
+                  <span id="prefix-chart-value"></span>
+                </div>
+                <svg id="prefix-chart" class="stacked-bar-svg" viewBox="0 0 1000 10" preserveAspectRatio="none" aria-hidden="true">
+                  <rect class="seg-track" x="0" y="0" width="1000" height="10"></rect>
+                  <rect id="bar-prefix" class="seg-prefix" x="0" y="0" width="0" height="10"></rect>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <small class="section-note" data-i18n="stats.usage.note">用量来自成功解析的模型响应，包含送审、规则预热和反馈分析。前缀命中率按输入 token 计算。</small>
+        </section>
+      </div>
+
+      <noscript data-i18n="stats.noscript">请启用 JavaScript 以查看统计。</noscript>
+    </main>
+  </div>
+</body>
+</html>

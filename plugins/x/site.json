@@ -1,0 +1,21 @@
+{
+  "id": "x",
+  "name": "X 首页时间线",
+  "version": "0.1.2",
+  "textPostLimit": 8192,
+  "pagePolicy": {
+    "timeline": "[data-testid=primaryColumn]",
+    "post": "article[data-testid=tweet]",
+    "text": "[data-testid=tweetText]",
+    "author": "[data-testid=User-Name]",
+    "photo": "[data-testid=tweetPhoto] img, [data-testid=videoPlayer] img, [data-testid=videoComponent] img, [data-testid='card.wrapper'] img",
+    "video": "video, [data-testid=videoPlayer], [data-testid=videoComponent]",
+    "promoted": "[data-testid=placementTracking], [data-testid=promotedIndicator], [data-testid=promotedTweet]"
+  },
+  "scheduling": { "browserConcurrency": 8, "coverConcurrency": 16 },
+  "cover": {
+    "hosts": ["pbs.twimg.com"],
+    "pathPattern": "/(?:media/[A-Za-z0-9_-]+|(?:ext_tw_video_thumb|amplify_video_thumb|tweet_video_thumb|card_img)/[A-Za-z0-9_/-]+)\\.(?:jpg|jpeg|png|webp)",
+    "referer": "https://x.com/"
+  }
+}

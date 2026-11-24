@@ -1,0 +1,119 @@
+{
+  "suite": "cases.json",
+  "cards": 23,
+  "withCover": 4,
+  "batches": 4,
+  "textCharacters": {
+    "baseline": 4024,
+    "compact": 2992
+  },
+  "mode": "live",
+  "measuredAt": "2026-11-22T14:12:41.077Z",
+  "promptVersion": "bili-card-8",
+  "requestedModel": "deepseek-flash",
+  "results": {
+    "baseline": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 23,
+      "calls": 4,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.913,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 0,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 1,
+      "undecided": 3,
+      "inputTokens": 3369,
+      "outputTokens": 58,
+      "totalTokens": 3427,
+      "cachedInputTokens": 2560,
+      "tokensPerCard": 149,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "multi",
+          "expected": [
+            1,
+            2
+          ],
+          "predicted": 1
+        },
+        {
+          "id": "custom-politics",
+          "expected": 0,
+          "predicted": -1
+        }
+      ]
+    },
+    "compact": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 23,
+      "calls": 4,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.7826,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 1,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 0.8182,
+      "undecided": 1,
+      "inputTokens": 2805,
+      "outputTokens": 65,
+      "totalTokens": 2870,
+      "cachedInputTokens": 768,
+      "tokensPerCard": 124.8,
+      "invalidBatches": [
+        {
+          "variant": "compact",
+          "ids": [
+            "custom-ad",
+            "custom-politics",
+            "custom-exception",
+            "custom-vague",
+            "custom-shop"
+          ],
+          "complete": true,
+          "shape": [
+            "string",
+            "string",
+            "string",
+            "string",
+            "string"
+          ]
+        }
+      ],
+      "mismatches": [
+        {
+          "id": "custom-ad",
+          "expected": 1,
+          "predicted": null
+        },
+        {
+          "id": "custom-politics",
+          "expected": 0,
+          "predicted": null
+        },
+        {
+          "id": "custom-exception",
+          "expected": 0,
+          "predicted": null
+        },
+        {
+          "id": "custom-vague",
+          "expected": -1,
+          "predicted": null
+        },
+        {
+          "id": "custom-shop",
+          "expected": 1,
+          "predicted": null
+        }
+      ]
+    }
+  }
+}

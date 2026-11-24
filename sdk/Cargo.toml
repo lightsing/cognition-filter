@@ -1,0 +1,7 @@
+[package]
+edition.workspace = true
+name = "cf-site-sdk"
+rust-version.workspace = true
+version = "1.0.0"
+[lints]
+workspace = true

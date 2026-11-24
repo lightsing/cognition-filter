@@ -1,0 +1,69 @@
+{
+  "suite": "user-feedback.json",
+  "cards": 8,
+  "withCover": 8,
+  "batches": 2,
+  "textCharacters": {
+    "baseline": 2211,
+    "compact": 1555
+  },
+  "mode": "live",
+  "measuredAt": "2026-11-22T14:14:16.675Z",
+  "promptVersion": "bili-card-9",
+  "requestedModel": "deepseek-flash",
+  "results": {
+    "baseline": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 8,
+      "calls": 2,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.875,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 0,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 1,
+      "undecided": 0,
+      "inputTokens": 2931,
+      "outputTokens": 22,
+      "totalTokens": 2953,
+      "cachedInputTokens": 640,
+      "tokensPerCard": 369.1,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "feedback-school-comments",
+          "expected": [
+            2,
+            3
+          ],
+          "predicted": 2
+        }
+      ]
+    },
+    "compact": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 8,
+      "calls": 2,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 1,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 1,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 1,
+      "undecided": 0,
+      "inputTokens": 2571,
+      "outputTokens": 90,
+      "totalTokens": 2661,
+      "cachedInputTokens": 256,
+      "tokensPerCard": 332.6,
+      "invalidBatches": [],
+      "mismatches": []
+    }
+  }
+}

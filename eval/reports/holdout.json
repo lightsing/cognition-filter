@@ -1,0 +1,60 @@
+{
+  "suite": "holdout.json",
+  "cards": 6,
+  "withCover": 6,
+  "batches": 1,
+  "textCharacters": {
+    "baseline": 1049,
+    "compact": 749
+  },
+  "mode": "live",
+  "measuredAt": "2026-11-22T13:59:47.992Z",
+  "promptVersion": "bili-card-6",
+  "requestedModel": "deepseek-flash",
+  "results": {
+    "baseline": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 6,
+      "calls": 1,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 1,
+      "multiLabelCount": 0,
+      "multiLabelExactAccuracy": null,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 1,
+      "undecided": 0,
+      "inputTokens": 1846,
+      "outputTokens": 15,
+      "totalTokens": 1861,
+      "cachedInputTokens": 384,
+      "tokensPerCard": 310.2,
+      "invalidBatches": [],
+      "mismatches": []
+    },
+    "compact": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 6,
+      "calls": 1,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 1,
+      "multiLabelCount": 0,
+      "multiLabelExactAccuracy": null,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 1,
+      "undecided": 0,
+      "inputTokens": 1682,
+      "outputTokens": 15,
+      "totalTokens": 1697,
+      "cachedInputTokens": 256,
+      "tokensPerCard": 282.8,
+      "invalidBatches": [],
+      "mismatches": []
+    }
+  }
+}

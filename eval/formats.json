@@ -1,0 +1,13 @@
+[
+  {
+    "rules": "default",
+    "cards": [
+      {"id":"format-personal","title":"为什么还有人珍藏老收音机？","cover":"covers/story.png","expected":3},
+      {"id":"format-layering","title":"从上班到换工作：大家都逃不出这两条路？","cover":"covers/tiers.png","expected":[2,3]},
+      {"id":"format-stereotype","title":"门卫都好打发，塞点零钱随你怎么使唤！","expected":2},
+      {"id":"format-tipping","title":"旅行礼仪：行李员帮忙搬箱子后，应该如何致谢？","expected":0},
+      {"id":"format-comment","title":"直播弹幕之外，一条评论说出了我当时的心情","cover":"covers/reply.png","expected":3},
+      {"id":"format-exception","title":"十分钟实拍测试：评论只作开场引用，从烤箱温度开始测","cover":"covers/reply.png","expected":0}
+    ]
+  }
+]

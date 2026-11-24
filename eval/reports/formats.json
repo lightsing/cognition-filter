@@ -1,0 +1,75 @@
+{
+  "suite": "formats.json",
+  "cards": 6,
+  "withCover": 4,
+  "batches": 1,
+  "textCharacters": {
+    "baseline": 1080,
+    "compact": 780
+  },
+  "mode": "live",
+  "measuredAt": "2026-11-22T13:59:49.990Z",
+  "promptVersion": "bili-card-6",
+  "requestedModel": "deepseek-flash",
+  "results": {
+    "baseline": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 6,
+      "calls": 1,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.8333,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 1,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0.25,
+      "correctlyBlockedRate": 0.75,
+      "undecided": 0,
+      "inputTokens": 1468,
+      "outputTokens": 17,
+      "totalTokens": 1485,
+      "cachedInputTokens": 384,
+      "tokensPerCard": 247.5,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "format-personal",
+          "expected": 3,
+          "predicted": 0
+        }
+      ]
+    },
+    "compact": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 6,
+      "calls": 1,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0.8333,
+      "multiLabelCount": 1,
+      "multiLabelExactAccuracy": 0,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 1,
+      "undecided": 0,
+      "inputTokens": 1304,
+      "outputTokens": 15,
+      "totalTokens": 1319,
+      "cachedInputTokens": 256,
+      "tokensPerCard": 219.8,
+      "invalidBatches": [],
+      "mismatches": [
+        {
+          "id": "format-layering",
+          "expected": [
+            2,
+            3
+          ],
+          "predicted": 2
+        }
+      ]
+    }
+  }
+}

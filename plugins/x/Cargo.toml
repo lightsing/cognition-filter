@@ -1,0 +1,14 @@
+[package]
+edition.workspace = true
+name = "cf-site-x"
+rust-version.workspace = true
+version = "0.1.2"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+cf-site-sdk.workspace = true
+
+[lints]
+workspace = true

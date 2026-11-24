@@ -1,0 +1,10 @@
+target/
+/dist/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Local editor settings
+/.idea/

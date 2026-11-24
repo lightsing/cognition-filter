@@ -1,0 +1,112 @@
+{
+  "suite": "holdout.json",
+  "cards": 6,
+  "withCover": 6,
+  "batches": 1,
+  "textCharacters": {
+    "baseline": 1080,
+    "compact": 822
+  },
+  "mode": "live",
+  "measuredAt": "2026-11-22T14:12:32.976Z",
+  "promptVersion": "bili-card-8",
+  "requestedModel": "deepseek-flash",
+  "results": {
+    "baseline": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 6,
+      "calls": 1,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 1,
+      "multiLabelCount": 0,
+      "multiLabelExactAccuracy": null,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 1,
+      "undecided": 0,
+      "inputTokens": 1867,
+      "outputTokens": 15,
+      "totalTokens": 1882,
+      "cachedInputTokens": 1664,
+      "tokensPerCard": 313.7,
+      "invalidBatches": [],
+      "mismatches": []
+    },
+    "compact": {
+      "models": [
+        "deepseek-flash"
+      ],
+      "count": 6,
+      "calls": 1,
+      "scoring": "按完整标签集精确匹配。单整数表示唯一标签，漏报、额外标签和无效响应均计错。",
+      "exactAccuracy": 0,
+      "multiLabelCount": 0,
+      "multiLabelExactAccuracy": null,
+      "falseBlockRate": 0,
+      "falseAllowRate": 0,
+      "correctlyBlockedRate": 0,
+      "undecided": 0,
+      "inputTokens": 1726,
+      "outputTokens": 17,
+      "totalTokens": 1743,
+      "cachedInputTokens": 256,
+      "tokensPerCard": 290.5,
+      "invalidBatches": [
+        {
+          "variant": "compact",
+          "ids": [
+            "hold-projections",
+            "hold-factions",
+            "hold-qa",
+            "hold-dogpile",
+            "hold-fairplay",
+            "hold-reading"
+          ],
+          "complete": true,
+          "shape": [
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "string"
+          ]
+        }
+      ],
+      "mismatches": [
+        {
+          "id": "hold-projections",
+          "expected": 1,
+          "predicted": null
+        },
+        {
+          "id": "hold-factions",
+          "expected": 0,
+          "predicted": null
+        },
+        {
+          "id": "hold-qa",
+          "expected": 3,
+          "predicted": null
+        },
+        {
+          "id": "hold-dogpile",
+          "expected": 2,
+          "predicted": null
+        },
+        {
+          "id": "hold-fairplay",
+          "expected": 0,
+          "predicted": null
+        },
+        {
+          "id": "hold-reading",
+          "expected": 3,
+          "predicted": null
+        }
+      ]
+    }
+  }
+}

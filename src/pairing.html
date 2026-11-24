@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="cf-title-key" content="pairing.pageTitle">
+  <title>浏览器配对 · Cognition Filter</title>
+  <link rel="stylesheet" href="/settings.css">
+  <script defer src="/i18n.js"></script>
+  <script defer src="/pairing.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content" data-i18n="skip.toContent">跳到主要内容</a>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="topbar">
+        <div class="brand">
+          <span class="mark" aria-hidden="true"></span>
+          <div class="brand-text">
+            <span class="brand-name" data-i18n="app.name">Cognition Filter</span>
+            <span class="app-subtitle" data-i18n="app.subtitle">本地语义过滤代理</span>
+          </div>
+        </div>
+        <label class="lang-control">
+          <span data-i18n="lang.label">语言</span>
+          <select id="lang-select">
+            <option value="zh-CN">简体中文</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+      </div>
+      <nav class="agent-nav" data-i18n-attr="aria-label:nav.ariaLabel" aria-label="本地 agent 导航">
+        <a href="/settings" data-i18n="nav.settings">设置</a>
+        <a href="/settings#plugins" data-i18n="nav.plugins">站点插件</a>
+        <a href="/rules" data-i18n="nav.rules">过滤规则</a>
+        <a href="/stats" data-i18n="nav.stats">过滤统计</a>
+        <a href="/" aria-current="page" data-i18n="nav.pairing">浏览器配对</a>
+      </nav>
+      <div class="page-head">
+        <div class="page-head-text">
+          <h1 data-i18n="pairing.heading">浏览器配对</h1>
+          <p class="page-lead" data-i18n="pairing.lead">安装站点用户脚本，并使用本机配对码授权浏览器与托盘代理通信。</p>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="panel" aria-labelledby="pair-code-heading">
+        <div class="panel-head">
+          <div>
+            <h2 id="pair-code-heading" data-i18n="pairing.codeSection.title">本机配对码</h2>
+            <p data-i18n="pairing.codeSection.desc">当站点脚本首次连接或提示输入配对码时，复制下方口令并粘贴确认。</p>
+          </div>
+        </div>
+        <div class="pair-code-box">
+          <div class="pair-code-meta">
+            <span class="pair-code-label" data-i18n="pairing.codeSection.label">配对码</span>
+            <code id="pair-code">__PAIR_CODE__</code>
+          </div>
+          <button id="copy-pair-code" type="button" class="primary" data-i18n="pairing.codeSection.copy">复制配对码</button>
+        </div>
+        <div id="copy-status" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="scripts-heading">
+        <div class="panel-head">
+          <div>
+            <h2 id="scripts-heading" data-i18n="pairing.scriptsSection.title">站点用户脚本</h2>
+            <p data-i18n="pairing.scriptsSection.desc">需先在浏览器中安装用户脚本管理器（如 Tampermonkey 或 Violentmonkey），再点击下方链接安装或更新对应站点脚本。</p>
+          </div>
+        </div>
+        <div id="site-plugins"><!-- SITE_PLUGINS --></div>
+        <p id="site-plugins-empty" class="empty-note" hidden data-i18n="pairing.scriptsSection.empty">暂无可安装的站点脚本，请在设置中确认已启用站点插件。</p>
+      </section>
+
+      <section class="panel" aria-labelledby="steps-heading">
+        <div class="panel-head">
+          <h2 id="steps-heading" data-i18n="pairing.steps.title">配对指引</h2>
+        </div>
+        <ol class="steps-grid">
+          <li class="step-card">
+            <span class="step-num" aria-hidden="true">1</span>
+            <h3 data-i18n="pairing.steps.step1Title">安装站点脚本</h3>
+            <p data-i18n="pairing.steps.step1Desc">点击上方对应站点的安装链接，并在脚本管理器中确认安装。</p>
+          </li>
+          <li class="step-card">
+            <span class="step-num" aria-hidden="true">2</span>
+            <h3 data-i18n="pairing.steps.step2Title">完成配对授权</h3>
+            <p data-i18n="pairing.steps.step2Desc">打开站点首页，在首次弹窗中粘贴本页口令。也可在油猴菜单选择「配对本地 agent」。已配对的脚本升级后可继续使用原口令。</p>
+          </li>
+          <li class="step-card">
+            <span class="step-num" aria-hidden="true">3</span>
+            <h3 data-i18n="pairing.steps.step3Title">通过托盘管理</h3>
+            <p data-i18n="pairing.steps.step3Desc">配置模型、查看统计或调整插件时，请直接从系统托盘菜单打开对应页面。</p>
+          </li>
+        </ol>
+      </section>
+
+      <noscript data-i18n="pairing.noscript">未启用 JavaScript 时仍可手动选中下方配对码并点击脚本安装链接。</noscript>
+    </main>
+  </div>
+</body>
+</html>
