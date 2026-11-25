@@ -1,6 +1,6 @@
 # 认知滤网（Cognition Filter）
 
-> **项目主页与交互演示**：[lightsing.github.io/cognition-filter](https://lightsing.github.io/cognition-filter/) · **最新版本下载**：[GitHub Releases (v0.10.1)](https://github.com/lightsing/cognition-filter/releases/latest)
+> **项目主页与交互演示**：[lightsing.github.io/cognition-filter](https://lightsing.github.io/cognition-filter/) · **最新版本下载**：[GitHub Releases (v0.11.0)](https://github.com/lightsing/cognition-filter/releases/latest)
 
 **认知滤网（Cognition Filter）** 是一款本地优先的多模态网页内容过滤工具，通过「**本地 Rust Agent + 站点 DLL 插件 + 油猴（Tampermonkey）脚本**」的协作架构，结合视觉大模型对信息流推荐卡片进行自然语言语义筛选，帮你屏蔽不想看到的内容。
 
@@ -37,7 +37,7 @@
 
 ### 1. 启动本地 Agent 并配置模型
 
-1. 双击发布版 `dist/release/cognition-filter.exe` 启动本地服务。
+1. 运行 Windows x64 安装包（MSI），然后从开始菜单打开 Cognition Filter。
 2. 在 Windows 任务栏通知区域找到 **认知滤网（Cognition Filter）** 漏斗图标（可能在隐藏图标列表中）。
 3. **双击图标**或右键选择「**修改配置**」，在 WebUI 中填写模型服务的 API Key（默认兼容 DeepSeek `deepseek-flash`，也可配置其他支持图片输入和 JSON 输出的 OpenAI 兼容接口）并保存。
 

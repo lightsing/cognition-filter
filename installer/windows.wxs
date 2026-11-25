@@ -1,0 +1,29 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Cognition Filter" Manufacturer="lightsing" Version="$(var.Version)"
+           UpgradeCode="A9AC14A4-47E3-4BD3-A782-15C9C2269B0C" Scope="perUser">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Cognition Filter is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="Cognition Filter">
+          <Component Id="Agent" Guid="1C1992AA-A6F2-4FA0-AC23-BF8427122744">
+            <File Id="AgentExe" Source="$(var.Payload)/cognition-filter.exe" />
+            <Shortcut Id="StartMenu" Directory="ProgramMenuFolder" Name="Cognition Filter"
+                      Target="[#AgentExe]" WorkingDirectory="INSTALLFOLDER" />
+            <RegistryValue Root="HKCU" Key="Software\lightsing\Cognition Filter" Name="Installed"
+                           Type="integer" Value="1" KeyPath="yes" />
+          </Component>
+          <Directory Id="PluginFolder" Name="plugins">
+            <Component Id="Bilibili"><File Source="$(var.Payload)/plugins/cf_site_bilibili.dll" /></Component>
+            <Component Id="XPlugin"><File Source="$(var.Payload)/plugins/cf_site_x.dll" /></Component>
+          </Directory>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+    <Feature Id="Application">
+      <ComponentRef Id="Agent" />
+      <ComponentRef Id="Bilibili" />
+      <ComponentRef Id="XPlugin" />
+    </Feature>
+  </Package>
+</Wix>

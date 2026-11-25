@@ -18,7 +18,7 @@
       'hero.eyebrow': 'Rust 本地 Agent · 多模态视觉语义 · 先遮盖后判定',
       'hero.title': '在污染视线前，<br>把信息流还给自己。',
       'hero.desc': '<strong>认知滤网（Cognition Filter）</strong>通过「本地 Rust Agent + 站点 DLL 插件 + 油猴脚本」协同工作。卡片出现即施加占位遮罩，综合标题、作者与封面视觉语义判定——精准拦截情绪挑动与截图搬运视频，Cookie 与 API Key 始终留在你的电脑。',
-      'hero.download': '下载 Windows 版 v0.10.1',
+      'hero.download': '下载 Windows 版 v0.11.0',
       'hero.quickstart': '5 分钟快速上手',
       'hero.releaseNotes': 'Release 说明',
       'hero.metric1Label': '实测完整标签命中',
@@ -105,14 +105,14 @@
       'start.tag': '三步开启清净浏览',
       'start.title': '从下载到完成配对，只需 3 分钟',
       'start.step1Title': '启动 Agent 并填写密钥',
-      'start.step1Desc': '下载并解压 Release 压缩包，运行 <code>cognition-filter.exe</code>。双击任务栏托盘漏斗图标打开配置页，填入 DeepSeek 或任意兼容视觉模型的 API Key。',
+      'start.step1Desc': '运行 Windows 安装包，然后从开始菜单打开 Cognition Filter。双击任务栏托盘漏斗图标打开配置页，填入 DeepSeek 或任意兼容视觉模型的 API Key。',
       'start.step2Title': '安装站点油猴脚本',
       'start.step2Desc': '在浏览器安装 Tampermonkey，右键托盘选择「打开配对页」，点击安装「哔哩哔哩首页」或「X 首页时间线」脚本，并复制 48 位本机配对码。',
       'start.step3Title': '刷新首页粘贴配对码',
       'start.step3Desc': '打开 B 站或 X 首页并刷新，在首次弹窗粘贴本机配对码即可开始过滤。支持随时在网页内点击「反馈误杀」或「选卡屏蔽」持续调优。',
       'cta.title': '准备好过滤信息流噪音了吗？',
       'cta.desc': 'Windows x64 发布包已内置 Rust Agent 主程序与 B 站、X 双站点插件（约 2.64 MB）。',
-      'cta.download': '立即下载 v0.10.1 (ZIP)',
+      'cta.download': '立即下载 v0.11.0 (MSI)',
       'cta.guide': '阅读用户手册',
       'docs.label': '完整文档导航：',
       'docs.userGuide': '用户使用手册',
@@ -135,7 +135,7 @@
       'hero.eyebrow': 'Local Rust Agent · Vision Semantics · Mask First, Reveal Later',
       'hero.title': 'Reclaim your feed<br>before noise hits your eyes.',
       'hero.desc': '<strong>Cognition Filter</strong> pairs a local Rust agent, native DLL site plugins, and Tampermonkey userscripts. Cards are masked the instant they enter the DOM and evaluated across title, author, and cover imagery—keeping your cookies and API key strictly on your machine.',
-      'hero.download': 'Download Windows v0.10.1',
+      'hero.download': 'Download Windows v0.11.0',
       'hero.quickstart': '3-Minute Quick Start',
       'hero.releaseNotes': 'Release Notes',
       'hero.metric1Label': 'Exact Label Accuracy',
@@ -222,14 +222,14 @@
       'start.tag': 'Up and Running in 3 Steps',
       'start.title': 'From Download to Filtered Feeds in 3 Minutes',
       'start.step1Title': 'Launch Agent & Set API Key',
-      'start.step1Desc': 'Extract the release archive and run <code>cognition-filter.exe</code>. Double-click the tray funnel icon and configure your DeepSeek or compatible vision model API key.',
+      'start.step1Desc': 'Run the Windows installer, then open Cognition Filter from the Start menu. Double-click the tray funnel icon and configure your DeepSeek or compatible vision model API key.',
       'start.step2Title': 'Install Site Userscripts',
       'start.step2Desc': 'Install Tampermonkey, right-click the tray icon → "Open Pairing Page", install the Bilibili or X userscript, and copy your 48-char pairing code.',
       'start.step3Title': 'Paste Pairing Code on Homepage',
       'start.step3Desc': 'Refresh Bilibili or X home and paste the pairing code in the prompt. Refine rules anytime via in-page false-positive reports or manual card picking.',
       'cta.title': 'Ready to filter out feed noise?',
       'cta.desc': 'The Windows x64 archive bundles the Rust agent and both Bilibili & X site plugins (~2.64 MB).',
-      'cta.download': 'Download v0.10.1 (ZIP)',
+      'cta.download': 'Download v0.11.0 (MSI)',
       'cta.guide': 'Read User Guide',
       'docs.label': 'Documentation:',
       'docs.userGuide': 'User Guide',
@@ -724,7 +724,7 @@ warmupCalls | warmupInputTokens | warmupHitTokens | warmupFailures`,
     manifest: `{
   "id": "x",
   "name": "X 首页时间线",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "textPostLimit": 8192,
   "scheduling": { "browserConcurrency": 8, "coverConcurrency": 16 },
   "pagePolicy": {
@@ -880,7 +880,7 @@ cf_site_resource_v1(uint32_t kind, size_t *length);`,
               <strong>哔哩哔哩首页 (bilibili)</strong>
               <span class="mock-scope">${zh ? '已启用' : 'Enabled'}</span>
             </div>
-            <p style="margin:0 0 10px;font-size:0.82rem;color:var(--text-muted)">DLL 0.7.1 · Userscript 0.6.1 · cf_site_bilibili.dll</p>
+            <p style="margin:0 0 10px;font-size:0.82rem;color:var(--text-muted)">DLL 0.8.0 · Userscript 0.7.0 · cf_site_bilibili.dll</p>
             <div class="pill-row">
               <span>browserConcurrency: 8</span>
               <span>coverConcurrency: 48</span>
@@ -892,7 +892,7 @@ cf_site_resource_v1(uint32_t kind, size_t *length);`,
               <strong>X 首页时间线 (x)</strong>
               <span class="mock-scope">${zh ? '已启用' : 'Enabled'}</span>
             </div>
-            <p style="margin:0 0 10px;font-size:0.82rem;color:var(--text-muted)">DLL 0.1.2 · Userscript 0.1.2 · cf_site_x.dll</p>
+            <p style="margin:0 0 10px;font-size:0.82rem;color:var(--text-muted)">DLL 0.2.0 · Userscript 0.2.0 · cf_site_x.dll</p>
             <div class="pill-row">
               <span>browserConcurrency: 8</span>
               <span>coverConcurrency: 16</span>

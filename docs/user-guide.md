@@ -8,7 +8,7 @@
 
 ### 1.1 获取与运行
 
-- **发布版（推荐日常使用）**：确保 `cognition-filter.exe` 与同级目录的 `plugins/` 文件夹（内含 `cf_site_bilibili.dll`、`cf_site_x.dll` 等）放在一起，双击 `cognition-filter.exe` 即可后台运行。
+- **发布版（推荐日常使用）**：运行 Windows x64 安装包（MSI），然后从开始菜单打开 Cognition Filter。安装包包含哔哩哔哩和 X 插件。
 - **开发调试版**：在源码根目录运行 `.\start.ps1`，会自动执行快速 `dev` 构建并带控制台日志窗口启动。
 
 启动成功后，Windows 任务栏右下角通知区域（托盘）会出现 **认知滤网** 漏斗图标（如未直接显示，请点击通知区域左侧的 `^` 展开隐藏图标）。

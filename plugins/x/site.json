@@ -1,7 +1,7 @@
 {
   "id": "x",
   "name": "X 首页时间线",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "textPostLimit": 8192,
   "pagePolicy": {
     "timeline": "[data-testid=primaryColumn]",

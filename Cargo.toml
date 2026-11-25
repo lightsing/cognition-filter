@@ -2,7 +2,7 @@
 edition = "2024"
 name = "cognition-filter"
 rust-version = "1.91"
-version = "0.10.1"
+version = "0.11.0"
 
 [workspace]
 default-members = [".", "plugins/bilibili", "plugins/x"]

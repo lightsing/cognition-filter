@@ -27,6 +27,7 @@ function setupFixture(fixture) {
   window.mock = { requests: [], feedback: [], picks: [], menus: [], menuNames: [], opened: [], listeners: {}, revision: 1, roots: [],
     storage: { pairToken: fixture.unpaired ? null : fixture.token }, installedPolicy: fixture.installedPolicy, proofs: {}, probes: [], api: [], protocolErrors: [], activeProbes: 0, maxActiveProbes: 0,
     livePort: fixture.livePort, ports: fixture.ports, responses: fixture.responses || {},
+    token: fixture.token,
     groups: [{ id: 'politics', name: '政治', enabled: true, include: ['时政'], exclude: ['史料研究'] }] };
   mock.prompts = []; mock.confirms = []; mock.latest = fixture.available || fixture.version;
   window.prompt = message => { mock.prompts.push(message); return fixture.acceptPair ? fixture.token : null; };
@@ -751,34 +752,60 @@ for (const site of ['bilibili','x']) {
       throw Error('timeout '+fn);
     };
     const check=(value,label)=>{if (!value) throw Error(label);};
+    const findRoot = attr => mock.roots.find(r => r.host.isConnected && r.host.hasAttribute(attr));
     try {
-      await until(()=>mock.storage.pairToken && mock.api.some(r=>r.path==='/v1/rules'));
-      check(mock.prompts.length===1 && mock.prompts[0].includes('托盘'),'first-use prompt');
+      await until(() => findRoot('data-cf-modal'));
+      const pairModal = findRoot('data-cf-modal');
+      check(pairModal.querySelector('.desc')?.textContent.includes('托盘'), 'first-use pairing sheet');
+      const input = pairModal.querySelector('[data-cf-pair-input]');
+      input.value = mock.token;
+      pairModal.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      await until(()=>mock.storage.pairToken && mock.api.some(r=>r.path==='/v1/rules') && !findRoot('data-cf-modal'));
+      const pill = findRoot('data-cf-pill');
+      check(Boolean(pill), 'dynamic pill mounted');
       mock.latest='0.0.1'; dispatchEvent(new Event('focus'));
       await new Promise(r=>setTimeout(r,80));
-      check(!mock.confirms.length,'offered downgrade');
+      check(!findRoot('data-cf-update-banner'),'offered downgrade');
       mock.latest='0.10.0'; dispatchEvent(new Event('focus'));
+      await until(()=>findRoot('data-cf-update-banner'));
+      findRoot('data-cf-update-banner').querySelector('[value="update"]').click();
       await until(()=>mock.opened.length===1);
       check(mock.opened[0].url==='http://127.0.0.1:'+mock.livePort+'/plugins/'+
         (location.pathname==='/home'?'x':'bilibili')+'/cognition-filter.user.js','wrong install URL');
       dispatchEvent(new Event('focus')); await new Promise(r=>setTimeout(r,80));
-      check(mock.prompts.length===1 && mock.confirms.length===1,'duplicate prompt');
+      check(!findRoot('data-cf-modal') && !findRoot('data-cf-update-banner'),'duplicate prompt');
       result.textContent='PASS';
     } catch(error){result.textContent='FAIL '+error.message;}
   }, {site, unpaired:true, acceptPair:true, acceptUpdate:true}));
 }
 test('older agents advertise an update through their installed script metadata', browserOptions, () => runBrowser(async () => {
-  for (let i=0;i<150 && !mock.confirms.length;i++) await new Promise(r=>setTimeout(r,15));
+  const findBanner = () => mock.roots.find(r => r.host.isConnected && r.host.hasAttribute('data-cf-update-banner'));
+  for (let i=0;i<150 && !findBanner();i++) await new Promise(r=>setTimeout(r,15));
+  const banner = findBanner();
+  const hasVersion = Boolean(banner?.textContent.includes('0.10.3'));
+  banner?.querySelector('[value="dismiss"]')?.click();
   dispatchEvent(new Event('focus')); await new Promise(r=>setTimeout(r,80));
-  result.textContent=mock.confirms.length===1 && mock.confirms[0].includes('0.10.3') && !mock.opened.length
+  result.textContent=hasVersion && !findBanner() && !mock.opened.length
     ? 'PASS' : 'FAIL legacy update or dismissal';
 }, {site:'x', legacyAgent:true, available:'0.10.3'}));
-test('dismissed pairing remains available from the menu', browserOptions, () => runBrowser(async () => {
-  await new Promise(r=>setTimeout(r,80));
-  dispatchEvent(new Event('focus')); await new Promise(r=>setTimeout(r,30));
-  const once=mock.prompts.length===1 && !mock.api.length;
-  await mock.menus[0]();
-  result.textContent=once && mock.prompts.length===2 && !mock.storage.pairToken ? 'PASS' : 'FAIL missing manual pairing';
+test('dismissed pairing remains available from the menu and dynamic pill', browserOptions, () => runBrowser(async () => {
+  const findPair = () => mock.roots.find(r => r.host.isConnected && r.host.hasAttribute('data-cf-modal'));
+  for (let i=0;i<100 && !findPair();i++) await new Promise(r=>setTimeout(r,15));
+  const firstOpen = Boolean(findPair()) && !mock.api.length;
+  findPair()?.querySelector('[value="cancel"]')?.click();
+  dispatchEvent(new Event('focus')); await new Promise(r=>setTimeout(r,50));
+  const stayedClosed = !findPair() && !mock.api.length;
+  void mock.menus[0]();
+  await new Promise(r=>setTimeout(r,30));
+  const reopenedFromMenu = Boolean(findPair());
+  findPair()?.querySelector('[value="cancel"]')?.click();
+  const pill = mock.roots.find(r => r.host.isConnected && r.host.hasAttribute('data-cf-pill'));
+  pill?.querySelector('[data-action="pair"]')?.click();
+  await new Promise(r=>setTimeout(r,30));
+  const reopenedFromPill = Boolean(findPair());
+  findPair()?.querySelector('[value="cancel"]')?.click();
+  result.textContent=firstOpen && stayedClosed && reopenedFromMenu && reopenedFromPill && !mock.storage.pairToken
+    ? 'PASS' : 'FAIL missing manual pairing';
 }, {unpaired:true}));
 test('X home masks recycled posts, reviews text and media, and respects route and plugin switches', browserOptions, () => runBrowser(async () => {
   const out = document.querySelector('#result');
@@ -843,14 +870,14 @@ test('X home masks recycled posts, reviews text and media, and respects route an
     (await open(post))[0].click();
     check(post.dataset.cfxState==='block' && post.firstChild.inert && !document.querySelector('[role=menu]'),'native menu remask');
     mock.roots.findLast(root=>root.host.parentNode===post).querySelector('button').click();
-    const choose = window.prompt;
-    window.prompt = () => '1';
     mock.menus[mock.menuNames.indexOf('选择帖子进行屏蔽')]();
     post.querySelector('[data-testid=tweetText]').click();
+    const sheet = mock.roots.findLast(root => root.host.isConnected && root.host.hasAttribute('data-cf-picker-sheet'));
+    check(Boolean(sheet), 'missing X picker sheet');
+    sheet.querySelector('[value="apply"]').click();
     await until(()=>mock.picks.length);
     check(mock.picks[0].body.card.id==='102' && mock.picks[0].body.groupId==='politics','manual pick sent wrong post');
-    mock.picks[0].onload({status:200,responseText:JSON.stringify({revision:mock.revision})});
-    window.prompt = choose;
+    mock.picks[0].onload({status:200,responseText:JSON.stringify({revision:mock.revision, message:'已屏蔽'})});
     const media = add('103','');
     const photo = document.createElement('div'); photo.dataset.testid='tweetPhoto'; media.firstChild.append(photo);
     const img = new Image(); img.src='/fixture-cover.png'; await img.decode();

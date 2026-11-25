@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Cognition Filter · 哔哩哔哩首页
 // @namespace    cognition-filter.local
-// @version      0.6.1
+// @version      0.7.0
 // @updateURL    none
 // @downloadURL  none
 // @description  先遮盖首页视频推荐，再按自己的自然语言规则显示通过检测的卡片
@@ -67,24 +67,49 @@
     const blocked = `${filterable}[data-cf-state="block"]`;
     const previous = styleNode;
     styleNode = GM_addStyle(`
+    @keyframes cfMaskShimmer {
+      0% { background-position: 100% 50% }
+      100% { background-position: 0% 50% }
+    }
+    @keyframes cfCardReveal {
+      from { opacity: 0.72 }
+      to { opacity: 1 }
+    }
+    ${filterable}[data-cf-state="allow"] { animation: cfCardReveal 0.24s cubic-bezier(0.22, 1, 0.36, 1) }
     ${mask} { position:relative!important; visibility:hidden!important; pointer-events:none!important }
     ${mask} *, ${mask} *::before, ${mask} *::after, ${mask}::before {
       visibility:hidden!important; pointer-events:none!important }
     ${mask}::after {
       content:"等待过滤"; visibility:visible!important; position:absolute!important; inset:0!important;
-      display:grid!important; place-content:center!important; padding:12px!important; box-sizing:border-box!important;
-      border:1px solid #d5dbe1!important; border-radius:7px!important;
-      color:#525e69!important; background:#edf0f2!important; text-align:center!important;
-      font:13px/1.5 system-ui,sans-serif!important; overflow:hidden!important; overflow-wrap:anywhere!important;
+      display:grid!important; place-content:center!important; padding:14px!important; box-sizing:border-box!important;
+      border:1px solid rgba(15, 23, 42, 0.08)!important; border-radius:12px!important;
+      color:#64748b!important;
+      background:linear-gradient(110deg, #f1f5f9 28%, #f8fafc 48%, #f1f5f9 68%)!important;
+      background-size:220% 100%!important;
+      animation:cfMaskShimmer 2.1s ease-in-out infinite!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.75)!important;
+      text-align:center!important; letter-spacing:0.01em!important;
+      font:500 12.5px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC",system-ui,sans-serif!important;
+      overflow:hidden!important; overflow-wrap:anywhere!important;
       pointer-events:none!important; z-index:1!important }
+    @media (prefers-color-scheme: dark) {
+      ${mask}::after {
+        border-color:rgba(255, 255, 255, 0.08)!important;
+        color:#94a3b8!important;
+        background:linear-gradient(110deg, #161a22 28%, #1f2530 48%, #161a22 68%)!important;
+        background-size:220% 100%!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,0.05)!important }
+    }
     ${mask}[data-cf-label]::after { content:attr(data-cf-label)!important }
-    ${blocked} { position:relative!important; overflow:hidden!important; isolation:isolate!important }
+    ${blocked} { position:relative!important; overflow:hidden!important; isolation:isolate!important; border-radius:12px!important }
     ${blocked} > :not([data-cf-controls]) { filter:blur(30px)!important; user-select:none!important }
     ${blocked} > :not([data-cf-controls]), ${blocked} > :not([data-cf-controls]) * { pointer-events:none!important }
     ${blocked} > [data-cf-controls] { position:absolute!important; inset:0!important; display:block!important;
       pointer-events:auto!important; z-index:2147483646!important; filter:none!important }
     ${root}[data-cf-picking] ${cardSelector}, ${root}[data-cf-picking] ${cardSelector} * { cursor:crosshair!important }
-    ${root}[data-cf-picking] [data-cf-highlight] { outline:4px solid #008bb1!important; outline-offset:2px!important }
+    ${root}[data-cf-picking] [data-cf-highlight] {
+      outline:2.5px solid #10b981!important; outline-offset:3px!important; border-radius:12px!important;
+      box-shadow:0 0 0 6px rgba(16, 185, 129, 0.18)!important }
   `);
     applyRouteFlag();
     previous?.remove?.();
@@ -102,7 +127,6 @@
   const nativeTrigger = '.bili-video-card__info--no-interest';
   const nativePanel = '.bili-video-card__info--no-interest-panel:not(.bili-video-card__info--no-interest-panel--ad)';
   const contentReasons = new Set(['内容不感兴趣', '对此内容不感兴趣', '內容不感興趣', '對此內容不感興趣', 'Not interested in the content']);
-  let notice;
   let picker;
   let epoch = 0;
   let revision = null;
@@ -114,12 +138,27 @@
   let syncing = null;
   let active = false;
   let token = GM_getValue('pairToken', '');
+  const ui = createCognitionUI({ siteName: '哔哩哔哩首页' });
   const client = createCognitionClient({
+    ui,
     getToken: () => token, generation: () => epoch, currentPage: () => home() && !document.hidden,
     current: body => active && (body?.revision == null || body.revision === revision),
   });
   let pairingAttempt = 0;
   let serviceStatus = '';
+  let pill = null;
+  function refreshPill() {
+    if (!pill) return;
+    let blocked = 0;
+    for (const rec of records.values()) if (rec.state === 'block') blocked++;
+    pill.update({
+      visible: active && !sitePaused,
+      paired: Boolean(token),
+      blocked,
+      reviewing: running,
+      error: token && revision === null ? serviceStatus : '',
+    });
+  }
 
   const nearViewport = typeof IntersectionObserver === 'function' && new IntersectionObserver(entries => {
     for (const { target, isIntersecting } of entries) {
@@ -292,18 +331,7 @@
   }
 
   function showFeedback(text) {
-    notice?.remove();
-    const host = document.createElement('div');
-    notice = host;
-    const root = host.attachShadow({ mode: 'closed' });
-    root.innerHTML = `<style>:host{all:initial;position:fixed;bottom:20px;right:16px;z-index:2147483647}
-      aside{width:min(380px,84vw);max-height:45vh;overflow:auto;padding:14px 16px;background:#172530;color:white;
-        box-shadow:0 4px 20px #0005;border-radius:10px;font:14px/1.55 system-ui,sans-serif}
-      p{white-space:pre-line;overflow-wrap:anywhere;margin:0}button{font:inherit;margin-top:8px;cursor:pointer}</style>
-      <aside><p role="status"></p><button type="button">关闭</button></aside>`;
-    root.querySelector('p').textContent = text;
-    root.querySelector('button').onclick = () => host.remove();
-    document.body.append(host);
+    ui.showToast(text);
   }
 
   function resultMessage(reply) {
@@ -331,46 +359,43 @@
     const record = records.get(card);
     const verdictRevision = revision;
     const startEpoch = epoch;
-    const host = document.createElement('div');
-    host.setAttribute('data-cf-controls', '');
-    const root = host.attachShadow({ mode: 'closed' });
-    root.innerHTML = `<style>
-      .shield{box-sizing:border-box;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
-        padding:5px;gap:6px;background:#19222f50;color:#fff;font:13px/1.35 system-ui,sans-serif;text-align:center}
-      button{padding:5px 9px;border:1px solid #fff9;
-        border-radius:5px;background:#17212df2;color:#fff;font:inherit;cursor:pointer}button:hover{background:#36495a}
-      button:focus-visible{outline:3px solid white;outline-offset:1px}button:disabled{opacity:.7;cursor:wait}
-      p{margin:0;max-width:95%;max-height:3.9em;overflow:auto;overflow-wrap:anywhere;text-shadow:0 1px 3px #000;
-        background:#17212dce;padding:2px 5px;border-radius:3px}p:empty{display:none}</style>
-      <div class="shield"><p role="status"></p><button type="button" value="peek">仍要查看</button></div>`;
-    const message = root.querySelector('p');
-    message.textContent = label;
-    root.querySelector('button').onclick = () => {
+    const shield = ui.createShieldHost('data-cf-controls');
+    shield.message.textContent = label;
+    const peek = document.createElement('button');
+    peek.type = 'button';
+    peek.value = 'peek';
+    peek.textContent = '仍要查看';
+    peek.onclick = () => {
       if (!verdictCurrent(card, record, verdictRevision, startEpoch)) return;
       record.revealed = true;
       present(card, 'block', label);
     };
+    shield.actions.append(peek);
     // Keep delegated site handlers away from overlay actions and pointer movement.
     for (const event of ['click','dblclick','auxclick','contextmenu','pointerdown','pointerup','pointerover','pointermove','mouseover','keydown','keyup']) {
-      host.addEventListener(event, e => e.stopPropagation());
+      shield.host.addEventListener(event, e => e.stopPropagation());
     }
-    const overlay = { host, locked: new Set() };
+    const overlay = { host: shield.host, locked: new Set() };
     overlays.set(card, overlay);
     lockContent(card, overlay);
   }
 
-  function revealedActions(parent, card, record, owns) {
+  function revealedActions(parent, card, record, owns, floating = false) {
     const verdictRevision = revision, startEpoch = epoch;
     const current = () => verdictCurrent(card, record, verdictRevision, startEpoch);
     const group = document.createElement('div');
     group.dataset.cfReviewActions = '';
     group.setAttribute('role', 'group');
     group.setAttribute('aria-label', 'Cognition Filter');
-    group.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;padding:5px';
+    group.style.cssText = floating
+      ? 'position:absolute;top:8px;right:8px;z-index:5;display:inline-flex;flex-wrap:wrap;gap:6px;padding:5px 7px;border-radius:999px;background:rgba(18,22,30,0.78);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid rgba(255,255,255,0.16);box-shadow:0 8px 24px rgba(0,0,0,0.25);color:#f8fafc;font:600 12px/1.2 -apple-system,BlinkMacSystemFont,"PingFang SC",system-ui,sans-serif'
+      : 'display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px;border-top:1px solid rgba(128,128,128,0.16)';
     function button(value, text, run) {
       const item = document.createElement('button');
       item.type = 'button'; item.value = value; item.textContent = text;
-      item.style.cssText = 'font:inherit;color:inherit;background:transparent;border:1px solid currentColor;border-radius:5px;padding:4px 8px;cursor:pointer';
+      item.style.cssText = floating
+        ? 'font:inherit;color:#f8fafc;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.16);border-radius:999px;padding:4px 10px;cursor:pointer'
+        : 'font:inherit;font-size:12px;font-weight:600;color:inherit;background:rgba(128,128,128,0.1);border:1px solid rgba(128,128,128,0.24);border-radius:999px;padding:4px 10px;cursor:pointer';
       item.onclick = e => {
         e.preventDefault(); e.stopPropagation();
         if (group.isConnected && owns() && record.revealed && current()) run();
@@ -526,10 +551,11 @@
         host.dataset.cfControls = '';
         card.append(host);
         overlays.set(card, { host, locked: new Set(), revealed: true });
-        revealedActions(host.attachShadow({mode:'closed'}), card, record, () => !card.querySelector(nativeTrigger));
+        revealedActions(host.attachShadow({mode:'closed'}), card, record, () => !card.querySelector(nativeTrigger), true);
       }
     } else if (state === 'block') blockControls(card, label);
     card.dataset.cfState = state;
+    refreshPill();
   }
 
   function inspect(card) {
@@ -710,7 +736,8 @@
     }
     for (const bindings of jobs.values()) {
       running++;
-      void classify(bindings, epoch).finally(() => { running--; schedule(); });
+      refreshPill();
+      void classify(bindings, epoch).finally(() => { running--; refreshPill(); schedule(); });
     }
   }
 
@@ -768,19 +795,24 @@
   }
 
   async function pair() {
-    const value = window.prompt('Cognition Filter · 配对 B 站首页。请右键本机托盘图标，打开「配对页」，复制配对码并粘贴到这里。');
-    const secret = value?.trim();
-    if (!secret) return false;
     const attempt = ++pairingAttempt;
-    try {
-      if (!await client.pair(secret, () => attempt === pairingAttempt)) return false;
-      token = secret;
-      reset();
-      return true;
-    } catch (error) {
-      if (attempt === pairingAttempt) { serviceStatus = error.message; showFeedback(error.message); }
-      return false;
-    }
+    return ui.promptPairing({
+      title: '配对哔哩哔哩首页',
+      subtitle: '请右键本机托盘图标，打开「配对页」，复制 48 位本机配对码并粘贴到下方。',
+      verify: async secret => {
+        try {
+          if (!await client.pair(secret, () => attempt === pairingAttempt)) return false;
+          token = secret;
+          serviceStatus = '';
+          reset();
+          refreshPill();
+          return true;
+        } catch (error) {
+          if (attempt === pairingAttempt) serviceStatus = error.message;
+          throw error;
+        }
+      },
+    });
   }
 
   function closePicker() {
@@ -790,7 +822,8 @@
     session.events.abort();
     session.highlight?.removeAttribute('data-cf-highlight');
     document.documentElement.removeAttribute('data-cf-picking');
-    session.host.remove();
+    session.hudHost?.remove();
+    session.host?.remove();
     if (session.record && records.get(session.card) === session.record) {
       const { record, card } = session;
       record.hold = '';
@@ -804,29 +837,33 @@
     session.events.abort();
     session.highlight?.removeAttribute('data-cf-highlight');
     document.documentElement.removeAttribute('data-cf-picking');
+    session.hudHost?.remove();
+    session.hudHost = null;
     Object.assign(session, { record, card });
     record.hold = '已选中 · 等待确认屏蔽';
     present(card, record.view.state, record.view.label);
-    const root = session.root;
-    root.innerHTML = `<style>
-      dialog{box-sizing:border-box;width:min(460px,94vw);max-height:85vh;overflow:auto;padding:18px;border:1px solid #adbcc8;
-        border-radius:10px;background:white;color:#17242e;font:14px/1.5 system-ui,sans-serif}dialog::backdrop{background:#12182066}
-      h2{margin:0 0 8px;font-size:19px}label{display:block}select{box-sizing:border-box;width:100%;
-        font:inherit;border:1px solid #9baab6;border-radius:5px;padding:5px}
-      footer{display:flex;align-items:start;gap:6px;margin:5px 0}
-      button{background:white;border:1px solid #9baab6;border-radius:5px;padding:5px 9px;
-        font:inherit;color:inherit;cursor:pointer}footer{margin-top:12px}button[value=apply]{background:#07588b;color:white}
-      p{margin:8px 0;overflow-wrap:anywhere}p:empty{display:none}</style><dialog aria-labelledby="cf-pick-title">
-      <h2 id="cf-pick-title">屏蔽选中的卡片</h2><label>规则组<select></select></label>
-      <p role="status"></p>
-      <footer><button value="rules">前往 WebUI 编辑规则</button><button value="apply">确认屏蔽</button><button value="cancel">取消</button></footer></dialog>`;
-    const dialog = root.querySelector('dialog');
-    const select = root.querySelector('select');
-    const status = root.querySelector('[role=status]');
-    const apply = root.querySelector('[value=apply]');
-    const cancel = root.querySelector('[value=cancel]');
-    const editRules = root.querySelector('[value=rules]');
-    editRules.onclick = openRules;
+    const preview = [record.data.title, record.data.author && ('UP · ' + record.data.author)].filter(Boolean).join(' — ');
+    const sheet = ui.createPickerSheet({
+      heading: '屏蔽选中的卡片',
+      preview,
+      onOpenRules: openRules,
+      onCancel: () => { if (!session.busy) closePicker(); },
+    });
+    session.host = sheet.host;
+    session.root = sheet.root;
+    const { select, status, rulesBtn: editRules, cancelBtn: cancel, applyBtn: apply } = sheet;
+    const onEscape = e => {
+      if (e.key === 'Escape' && picker === session && !session.busy) {
+        e.preventDefault();
+        closePicker();
+      }
+    };
+    window.addEventListener('keydown', onEscape, { capture: true });
+    const origRemove = sheet.host.remove.bind(sheet.host);
+    sheet.host.remove = () => {
+      window.removeEventListener('keydown', onEscape, { capture: true });
+      origRemove();
+    };
     let selectionRevision;
     function populate() {
       const previous = select.value;
@@ -842,8 +879,6 @@
     }
     session.syncGroups = () => { if (!session.busy && selectionRevision !== revision) populate(); };
     populate();
-    cancel.onclick = closePicker;
-    dialog.addEventListener('cancel', e => { e.preventDefault(); if (!session.busy) closePicker(); });
     apply.onclick = async () => {
       if (session.busy || picker !== session) return;
       if (records.get(card) !== record || JSON.stringify(snapshot(card)) !== record.key) { closePicker(); return; }
@@ -883,24 +918,17 @@
         present(card, record.view.state, record.view.label);
       }
     };
-    dialog.showModal();
   }
 
   async function startPicker() {
     if (!active || !document.body || picker?.busy) return;
     closePicker();
-    if (!token) { showFeedback('请先在油猴菜单配对本地 agent。'); return; }
+    if (!token) { showFeedback('请先连接本地 agent。'); void pair(); return; }
     if (revision === null && !await syncRules()) { showFeedback(serviceStatus); return; }
-    const host = document.createElement('div');
-    const root = host.attachShadow({ mode: 'closed' });
-    root.innerHTML = `<style>aside{position:fixed;z-index:2147483647;bottom:16px;left:50%;transform:translateX(-50%);
-      background:#172530;color:white;padding:8px 12px;border-radius:7px;font:14px/1.5 system-ui,sans-serif}
-      button{margin-left:8px;font:inherit;cursor:pointer}</style><aside>点击要屏蔽的首页卡片<button>取消（Esc）</button></aside>`;
-    const session = { host, root, events: new AbortController() };
+    const session = { events: new AbortController() };
+    session.hudHost = ui.mountPickerBanner({ text: '点击要屏蔽的首页卡片', onCancel: closePicker });
     picker = session;
-    document.body.append(host);
     document.documentElement.setAttribute('data-cf-picking', '');
-    root.querySelector('button').onclick = closePicker;
     const options = { capture: true, signal: session.events.signal };
     function target(event) {
       const direct = event.target.closest?.(cardSelector);
@@ -947,8 +975,11 @@
 
   function route() {
     applyRouteFlag();
+    if (!pill && document.body) {
+      pill = ui.mountPill({ onPair: pair, onPick: startPicker, onRules: openRules, onReset: reset });
+    }
     if (home()) client.offerPairing(home, pair);
-    if (active === home()) return;
+    if (active === home()) { refreshPill(); return; }
     active = home();
     if (active) { scan(document); reset(); }
     else {
@@ -957,8 +988,9 @@
       epoch++;
       closePicker();
       for (const card of records.keys()) forget(card);
-      notice?.remove();
+      ui.clearToast();
     }
+    refreshPill();
   }
 
   function retryLoadedCover(card) {

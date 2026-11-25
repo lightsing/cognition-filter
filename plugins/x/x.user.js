@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Cognition Filter · X 首页时间线
 // @namespace    cognition-filter.local
-// @version      0.1.2
+// @version      0.2.0
 // @description  遮盖并逐帖审查 X 首页的「为你推荐」和「正在关注」时间线
 // @match        https://x.com/*
 // @run-at       document-start
@@ -25,10 +25,25 @@
   let concurrency = 8, running = 0, syncing, picking = false, style;
   let status = '等待本地规则';
   const posts = new Map();
-  const client = createCognitionClient({ generation: () => generation, currentPage: () => home() && !document.hidden });
+  const ui = createCognitionUI({ siteName: 'X 首页时间线' });
+  const client = createCognitionClient({ ui, generation: () => generation, currentPage: () => home() && !document.hidden });
+  let pill = null, pickHud = null, pickSheet = null;
   const activeGroup = g => g.enabled && g.include.some(p => !g.disabledInclude?.includes(p));
   const scope = () => policy.timeline + ' ' + policy.post + ':not(article article):not([role=dialog] article)';
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+  function refreshPill() {
+    if (!pill) return;
+    let blocked = 0;
+    for (const rec of posts.values()) if (rec.state === 'block') blocked++;
+    const paired = Boolean(GM_getValue('pairToken', ''));
+    pill.update({
+      visible: onHome && enabled,
+      paired,
+      blocked,
+      reviewing: running,
+      error: paired && revision === null ? status : '',
+    });
+  }
 
   function validPolicy(value) {
     return value && Object.keys(bundled).every(k => typeof value[k] === 'string' &&
@@ -46,12 +61,14 @@
     const post = 'html[data-cfx-home] ' + scope();
     const content = ' > :not([data-cfx-controls])';
     const masked = post + ':not([data-cfx-state="allow"],[data-cfx-state="native"],[data-cfx-state="block"])' + content;
-    style.textContent = masked + ',' + masked + ' *' +
+    style.textContent = '@keyframes cfxShimmer{0%{background-position:100% 50%}100%{background-position:0% 50%}}' +
+      masked + ',' + masked + ' *' +
       '{visibility:hidden!important;pointer-events:none!important}' +
-      post + ':not([data-cfx-state="allow"],[data-cfx-state="native"]){position:relative!important;isolation:isolate}' +
+      post + ':not([data-cfx-state="allow"],[data-cfx-state="native"]){position:relative!important;isolation:isolate;overflow:hidden}' +
+      post + ':not([data-cfx-state="allow"],[data-cfx-state="native"],[data-cfx-state="block"]){background:linear-gradient(110deg,rgba(148,163,184,0.06) 28%,rgba(148,163,184,0.13) 48%,rgba(148,163,184,0.06) 68%);background-size:220% 100%;animation:cfxShimmer 2.1s ease-in-out infinite}' +
       post + '[data-cfx-state="block"]' + content + '{filter:blur(30px)!important;pointer-events:none!important;user-select:none}' +
-      post + ' > [data-cfx-controls]{position:absolute!important;inset:0!important;display:grid!important;place-content:center;z-index:2}' +
-      'html[data-cfx-pick] ' + scope() + ':hover{outline:3px solid #1d9bf0!important;cursor:crosshair}';
+      post + ' > [data-cfx-controls]{position:absolute!important;inset:0!important;display:block!important;z-index:2}' +
+      'html[data-cfx-pick] ' + scope() + ':hover{outline:2.5px solid #10b981!important;outline-offset:-2px;box-shadow:inset 0 0 0 4px rgba(16,185,129,0.14)!important;cursor:crosshair}';
   }
 
   // Keep a complete UTF-16 character at the wire limit.
@@ -203,26 +220,27 @@
     if (state === 'native' || state === 'allow' || revealed) {
       rec.host?.remove(); rec.host = null;
       unlock(rec);
+      refreshPill();
       return;
     }
     if (!rec.host) {
-      rec.host = document.createElement('div');
-      rec.host.setAttribute('data-cfx-controls','');
-      const root = rec.host.attachShadow({mode:'closed'});
-      root.innerHTML = '<style>section{font:13px/1.4 system-ui;color:white;background:#15202be8;border-radius:8px;padding:6px 10px;text-align:center;max-width:85vw}button{font:inherit;margin:4px;cursor:pointer}</style><section><span role="status"></span><div></div></section>';
-      rec.message = root.querySelector('span');
-      rec.actions = root.querySelector('section > div');
-      for (const event of ['click','pointerdown','keydown']) root.addEventListener(event, e => e.stopPropagation());
+      const shield = ui.createShieldHost('data-cfx-controls');
+      rec.host = shield.host;
+      rec.veil = shield.veil;
+      rec.message = shield.message;
+      rec.actions = shield.actions;
+      for (const event of ['click','pointerdown','keydown']) shield.root.addEventListener(event, e => e.stopPropagation());
     }
+    rec.veil.dataset.mode = state === 'block' || state === 'error' ? 'shield' : 'quiet';
     if (rec.host.parentNode !== post) post.append(rec.host);
     for (const child of post.children) if (child !== rec.host && !child.inert) {
       child.inert = true; rec.locked.add(child);
     }
     rec.message.textContent = message;
     rec.actions.replaceChildren();
-    function button(text, fn) {
+    function button(text, value, fn) {
       const b = document.createElement('button');
-      b.type = 'button'; b.textContent = text;
+      b.type = 'button'; b.value = value; b.textContent = text;
       b.onclick = async e => {
         e.preventDefault();
         if (!current(post, rec)) return;
@@ -234,17 +252,18 @@
       rec.actions.append(b);
     }
     if (state === 'block') {
-      button('仍要查看', () => {
+      button('仍要查看', 'peek', () => {
         rec.revealed = true;
         render(post, rec, 'block', rec.blockLabel);
         post.querySelector('[data-testid=caret]')?.focus({preventScroll:true});
       });
     } else if (state === 'error') {
-      button('重试', async () => { clear(post, rec); await sync(); scan(); });
+      button('重试', 'retry', async () => { clear(post, rec); await sync(); scan(); });
     }
+    refreshPill();
   }
 
-  let postMenu, notice, noticeTimer;
+  let postMenu;
   const menuSelector = '[role=menu],[data-testid=Dropdown]';
   const visibleMenus = () => [...document.querySelectorAll(menuSelector)].filter(menu =>
     menu.getClientRects().length && !menu.querySelector(menuSelector) && menu.querySelector('[role=menuitem]'));
@@ -255,14 +274,7 @@
     postMenu = null;
   }
   function notify(message) {
-    clearTimeout(noticeTimer);
-    notice?.remove();
-    notice = document.createElement('div');
-    notice.setAttribute('role','status');
-    notice.style.cssText = 'position:fixed;bottom:20px;right:16px;max-width:min(400px,85vw);background:#172530;color:white;padding:10px 14px;border-radius:8px;z-index:2147483647;font:14px/1.5 system-ui';
-    notice.textContent = message;
-    document.body.append(notice);
-    noticeTimer = setTimeout(() => notice?.remove(), 8000);
+    ui.showToast(message);
   }
   function watchPostMenu(e) {
     if (postMenu?.group?.contains(e.target)) return;
@@ -379,7 +391,7 @@
       if (rec.state !== 'queued') continue;
       running++;
       render(post, rec, 'reviewing', '正在判定');
-      void review(post, rec).finally(() => { running--; drain(); });
+      void review(post, rec).finally(() => { running--; refreshPill(); drain(); });
     }
   }
 
@@ -417,20 +429,43 @@
     generation++;
     for (const [post, rec] of posts) clear(post, rec);
   }
+  function closePickSheet() {
+    pickSheet?.host?.remove();
+    pickSheet = null;
+  }
   function setPicking(value) {
     picking = value;
     document.documentElement?.toggleAttribute('data-cfx-pick', value);
+    pickHud?.remove();
+    pickHud = value ? ui.mountPickerBanner({ text: '点击要屏蔽的帖子', onCancel: () => setPicking(false) }) : null;
+    if (!value) closePickSheet();
+  }
+  async function openRules() {
+    try { GM_openInTab(await client.rulesPageUrl(), {active:true}); }
+    catch (error) { notify(error.message); }
   }
   function route() {
+    if (!pill && document.body) {
+      pill = ui.mountPill({
+        onPair: pair,
+        onPick: () => {
+          if (!GM_getValue('pairToken', '')) { notify('请先连接本地 agent。'); void pair(); return; }
+          if (onHome && enabled && revision) setPicking(!picking);
+        },
+        onRules: openRules,
+        onReset: () => { reset(); void sync(); },
+      });
+    }
     const next = home();
     if (next) client.offerPairing(home, pair);
     if (next !== onHome) {
       onHome = next;
       revision = null; setPicking(false); reset();
       if (next) void sync();
-      else notice?.remove();
+      else ui.clearToast();
     }
     document.documentElement?.toggleAttribute('data-cfx-home', next && enabled);
+    refreshPill();
   }
   async function sync() {
     if (!home()) return;
@@ -468,40 +503,71 @@
     try { await work; } finally { if (syncing?.work === work) syncing = null; }
   }
 
-  document.addEventListener('click', async e => {
+  document.addEventListener('click', e => {
     if (!picking || !home()) return;
     const post = e.target.closest?.(scope());
     const rec = posts.get(post);
     if (!rec || !current(post, rec) || !revision || !rec.snap?.card || rec.snap.waiting) return;
-    e.preventDefault(); e.stopImmediatePropagation(); setPicking(false);
+    e.preventDefault(); e.stopImmediatePropagation();
+    picking = false;
+    document.documentElement?.removeAttribute('data-cfx-pick');
+    pickHud?.remove(); pickHud = null;
+    closePickSheet();
+    const preview = [rec.snap.card.author, rec.snap.card.title].filter(Boolean).join(' · ').slice(0, 140);
+    const sheet = ui.createPickerSheet({
+      heading: '屏蔽选中的帖子',
+      preview,
+      onOpenRules: openRules,
+      onCancel: closePickSheet,
+    });
+    pickSheet = sheet;
     const available = groups.filter(activeGroup);
-    const choice = prompt('选择屏蔽规则（输入编号，0 为新增）\n' + available.map((g,i) => (i+1) + '. ' + g.name).join('\n'));
-    if (choice === null || !/^\d+$/.test(choice.trim())) return;
-    const n = Number(choice);
-    const body = {card:rec.wire || rec.snap.card,revision};
-    if (n === 0) {
-      const name = prompt('新规则名称')?.trim();
-      const point = name && prompt('命中要点')?.trim();
-      if (!point) return;
-      body.newGroup = {id:crypto.randomUUID(),name,enabled:true,include:[point],exclude:[]};
-    } else if (available[n-1]) body.groupId = available[n-1].id;
-    else return;
-    try {
-      body.card = rec.wire || await wireCard(rec);
-      await client.pick(body, () => current(post,rec));
-      await sync();
-    } catch (error) { alert(error.message); if (error.status === 409) void sync(); }
+    sheet.select.replaceChildren(...available.map(g => new Option(g.name, g.id)));
+    sheet.select.disabled = !available.length;
+    sheet.applyBtn.disabled = !available.length;
+    if (!available.length) sheet.status.textContent = '请在 WebUI 新增或启用命中要点，再回来选择规则组。';
+    const selectRev = revision;
+    sheet.applyBtn.onclick = async () => {
+      if (!sheet.select.value || !current(post, rec)) { closePickSheet(); return; }
+      sheet.select.disabled = sheet.rulesBtn.disabled = sheet.applyBtn.disabled = sheet.cancelBtn.disabled = true;
+      sheet.status.textContent = '正在分析选中的帖子…';
+      try {
+        const card = rec.wire || await wireCard(rec);
+        const reply = await client.pick({ card, revision: selectRev, groupId: sheet.select.value }, () => current(post, rec));
+        closePickSheet();
+        if (reply?.message) notify([reply.message, reply.analysis].filter(Boolean).join(' · '));
+        await sync();
+      } catch (error) {
+        if (error.status === 409) void sync();
+        if (pickSheet === sheet) {
+          sheet.select.disabled = sheet.rulesBtn.disabled = sheet.applyBtn.disabled = sheet.cancelBtn.disabled = false;
+          sheet.status.textContent = error.message + ' · 可重试或取消';
+        }
+      }
+    };
   }, true);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') setPicking(false); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (pickSheet && !pickSheet.cancelBtn.disabled) closePickSheet();
+      else setPicking(false);
+    }
+  });
   async function pair() {
-    const token = window.prompt('Cognition Filter · 配对 X 首页。请右键本机托盘图标，打开「配对页」，复制配对码并粘贴到这里。')?.trim();
-    if (!token) return;
-    try { await client.pair(token); reset(); await sync(); } catch (error) { alert(error.message); }
+    return ui.promptPairing({
+      title: '配对 X 首页时间线',
+      subtitle: '请右键本机托盘图标，打开「配对页」，复制 48 位本机配对码并粘贴到下方。',
+      verify: async secret => {
+        await client.pair(secret);
+        status = '等待本地规则';
+        reset();
+        await sync();
+        refreshPill();
+        return true;
+      },
+    });
   }
   GM_registerMenuCommand('配对本地 agent', pair);
-  GM_registerMenuCommand('编辑规则', async () => {
-    try { GM_openInTab(await client.rulesPageUrl(), {active:true}); } catch (error) { alert(error.message); }
-  });
+  GM_registerMenuCommand('编辑规则', openRules);
   GM_registerMenuCommand('选择帖子进行屏蔽', () => { if (onHome && enabled && revision) setPicking(!picking); });
   GM_registerMenuCommand('重试检测', () => { reset(); void sync(); });
 

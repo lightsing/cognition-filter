@@ -192,6 +192,8 @@ test('statistics page switches periods and uses decided cards and input tokens f
     const el = id => document.getElementById(id);
     try {
       for (let i = 0; i < 150 && el('numbers').hidden; i++) await new Promise(resolve => setTimeout(resolve, 20));
+      el('lang-select').value = 'zh-CN';
+      el('lang-select').dispatchEvent(new Event('change', { bubbles: true }));
       if (el('block-rate').textContent !== '25%' || el('prefix-rate').textContent !== '50%') throw Error('rates');
       if (!el('rule-hits').textContent.includes('新闻2')) throw Error('rule counts');
       const cells = i => [...el('site-usage').rows[i].cells].map(cell => cell.textContent).join('|');
